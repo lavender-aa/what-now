@@ -8,8 +8,6 @@ from kivy.uix.button import Button
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from plyer import stt
-import threading
-from kivy.clock import Clock
 import re
 
 
@@ -52,7 +50,7 @@ class Voice(Screen):
             self.listening = True
 
             # change button text when recording
-            mic_icon.source = "../mic_green.png"  # change to green
+            mic_icon.source = "images/mic_green.png"  # change to green
             self.ids.record_button.text = "Stop Recording"
 
             # start speech to text
@@ -62,18 +60,20 @@ class Voice(Screen):
         else:
             print("recording stopped")
             self.listening = False
-            if stt.listening(): # necessary?
-                stt.stop()
+            stt.stop()
             
             # change button text
             self.ids.record_button.text = "Record"
-            mic_icon.source = "../mic_white.png"  # change back to white
+            mic_icon.source = "images/mic_white.png"  # change back to white
             
             #enable submit button
             self.ids.submit_voice_button.disabled = False
 
             # add recognized portion to text
-            self.ids.voice_text_input.text = stt.results[0]
+            try:
+                self.ids.voice_text_input.text = stt.results[0]
+            except:
+                print("error: unable to access stt results")
 
     # submit buttons function - send text to command interpreter and perform commands
     def submit_voice(self):
@@ -419,7 +419,8 @@ class Voice(Screen):
             # clear commands list after they are performed
             #app.command_interpreter.commands = []
             command_interpreter.commands = []
-            Clock.schedule_once(self._cleanup)
+            # Clock.schedule_once(self._cleanup)
+            self._cleanup()
 
     def on_accept_command(self,command, inputs):
         self.accept_command_popup.dismiss()

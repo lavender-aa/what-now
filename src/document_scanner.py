@@ -17,22 +17,22 @@ from typing import Optional
 from ui import *
 
 import time
-import pytesseract
+# import pytesseract
 # this is for windows to find pytesseract
 #it does it differently than linux
 #we need to have pytesseract inside the what-now folder
 import sys
 from pathlib import Path
-if sys.platform.startswith("win"):
-    #explicitly set tesseract path
-    project_root = Path(__file__).resolve().parent.parent
-    pytesseract.pytesseract.tesseract_cmd = str(project_root / "pytesseract" / "tesseract.exe")
+# if sys.platform.startswith("win"):
+#     #explicitly set tesseract path
+#     project_root = Path(__file__).resolve().parent.parent
+#     pytesseract.pytesseract.tesseract_cmd = str(project_root / "pytesseract" / "tesseract.exe")
 
 
-import numpy as np
+# import numpy as np
 import cv2
-from PIL import Image
-import logging
+# from PIL import Image
+# import logging
 from threading import Thread
 
 from kivy.clock import Clock
@@ -114,10 +114,14 @@ class DocumentScanner(BoxLayout):
             cv2.imwrite("pngs/ocr.png", processed_img)
 
             # Scan text using pytesseract
-            self.scanned_text = pytesseract.image_to_string(
-                processed_img,
-                config="--oem 1 --psm 12"
-            )
+            # self.scanned_text = pytesseract.image_to_string(
+            #     processed_img,
+            #     config="--oem 1 --psm 12"
+            # )
+            
+            # TODO: eventually add pytesseract somehow (recipe?)
+            # for now: hardcode text
+            self.scanned_text = "ERROR: OCR is currently not supported."
 
             # Disable camera while processing
             self.ids.camera.play = False

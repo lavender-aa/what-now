@@ -4,7 +4,7 @@ from kivy.clock import Clock
 
 
 # pyjnius stuff for android notifications api
-from pyjnius import autoclass
+from jnius import autoclass
 
 class Notifier:
     def __init__(self):

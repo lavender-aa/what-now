@@ -2,7 +2,7 @@ from CalendarEvent import CalendarEvent, DateRange, TimeRange, Repeat, NotifTime
     Day
 from datetime import date as Date, time as Time, timedelta
 from local_syllabus_parser import LocalSyllabusParser
-from llama_cpp import Llama
+# from llama_cpp import Llama
 import json
 # re for expression recognition (used to parse date and time)
 import re
@@ -14,12 +14,13 @@ from typing import Tuple, List
 from pathlib import Path
 
 # Get the path to the project root (one level up from src)
-project_root = Path(__file__).resolve().parent.parent
-model = project_root / "models" / "qwen2.5-coder-1.5b-instruct-q4_0.gguf"
+project_root = Path(__file__).resolve().parent.parent # -> /data/data/com.spg1.what_now/
+model = project_root / "app" / "models" / "qwen2.5-coder-1.5b-instruct-q4_0.gguf"
 
 # Check it exists
 if not model.exists():
     raise ValueError(f"Model path does not exist: {model}")
+    
 
 
 class CommandType(Enum):
@@ -101,16 +102,17 @@ class CommandInterpreter:
     def __init__(self):
         self.commands = list()
 
-        self.llm = Llama(
-            model_path=str(model),
-            n_ctx=1024,  # Context window
-            n_threads=10  # CPU threads
+        # self.llm = Llama(
+        #     model_path=str(model),
+        #     n_ctx=1024,  # Context window
+        #     n_threads=10  # CPU threads
 
-        )
+        # )
 
     # words like, "add", "create", "schedule", "make"
     # AI model for parsing commands
     def parse_command(self, text: str) -> dict:
+        
         prompt = f"""You are a JSON extraction assistant. Parse the following user input into structured commands.
 
         USER INPUT:
@@ -208,17 +210,19 @@ class CommandInterpreter:
             - If a field is missing or unknown, set it to null.
         JSON:"""
 
-        response = self.llm.create_chat_completion(
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }],
-            temperature=0.1,
-            max_tokens=2000,
-            response_format={"type": "json_object"}
-        )
+        # response = self.llm.create_chat_completion(
+        #     messages=[{
+        #         "role": "user",
+        #         "content": prompt
+        #     }],
+        #     temperature=0.1,
+        #     max_tokens=2000,
+        #     response_format={"type": "json_object"}
+        # )
 
-        content = response['choices'][0]['message']['content']
+        # content = response['choices'][0]['message']['content']
+        
+        content = "aoeu"
 
         try:
             return json.loads(content)

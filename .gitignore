@@ -19,10 +19,11 @@
 
 # source file dirs
 !src
-!src/*.py
-
-!ui
-!ui/*.xv
+!src/*
 
 !p4a_recipes
-!p4a_recipes/**
+!p4a_recipes/*
+!p4a_recipes/**/*.py
+
+!images
+!images/*

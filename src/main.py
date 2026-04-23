@@ -23,21 +23,26 @@ import asyncio
 import calendar
 import datetime
 
-Builder.load_file('../ui/themed.kv')
-Builder.load_file('../ui/home_page.kv')
-Builder.load_file('../ui/voice_page.kv')
-Builder.load_file('../ui/scanner_page.kv')
-Builder.load_file('../ui/whatnow.kv')
+# permissions needed: INTERNET, POST_NOTIFICATIONS, RECORD_AUDIO, CAMERA
+from android.permissions import request_permissions, Permission
+request_permissions([
+    Permission.INTERNET,
+    Permission.POST_NOTIFICATIONS, 
+    Permission.RECORD_AUDIO,
+    Permission.CAMERA
+])
+
+Builder.load_file('whatnow.kv')
 
 Config.set('kivy', 'camera', 'opencv')
 Config.set('graphics', 'resizable', '0')
 Config.set('graphics', 'width', '360')
 Config.set('graphics', 'height', '640')
-Config.set('kivy', 'keyboard_mode', 'system')
+# Config.set('kivy', 'keyboard_mode', 'system')
 
 # For fixing multitouch
-Config.remove_option('input', '%(name)s')
-Config.set('input', 'mouse', 'mouse')
+# Config.remove_option('input', '%(name)s')
+# Config.set('input', 'mouse', 'mouse')
 
 # custom class imports
 from CalendarEvent import *
@@ -54,6 +59,37 @@ import calendar
 # TODO: Move to seperate file
 class Home(Screen):
     view_type = "month"
+    
+    # DEBUG TODO
+    # TEST: make sure model works
+    def llm_test(self):
+        # disable button
+        self.ids.RUN_LLM_TEST.disabled = True
+        
+        import os
+        ocr_text = "50" # test: max number of words to use
+        prompt = f"write a story about a computer science student in less than __WORDS__ words.\nResponse: ".replace("__WORDS__", ocr_text)
+        
+        with open("test_prompt.txt", "w") as f:
+            f.write(prompt)
+        print("finished writing prompt to file")
+        
+        modelname = "qwen2.5-coder-1.5b-instruct-q4_0"
+        cmd = f"arm-llama-b8779/llama-completion -m models/{modelname}.gguf --ctx-size 4096 --offline -st --temp 0.1 -f test_prompt.txt > output.txt"
+        os.system(cmd)
+        print("just called system command")
+        
+        os.system("sleep 120")
+        print("waited 2m")
+        
+        with open("output.txt", "r") as f:
+            response = f.read()
+        print("just opened output to read")
+            
+        response = response[response.find("Response: ")+len("Response: "):]
+            
+        print("model response to prompt (story in x words):\n" + response)
+        self.ids.RUN_LLM_TEST.disabled = False
 
     def add_event(self, event: CalendarEvent):
         user_schedule.add_event(event)
@@ -179,23 +215,23 @@ class Home(Screen):
                 box.add_widget(edit_event)
 
     def on_kv_post(self, base_widget):
-        # Preseeded, just for now though
-        self.add_event(CalendarEvent(
-            name="Intro to Computing",
-            desc="Intro to Computing class",
-            notifs=[NotifTime(15)],
-            dates=DateRange("4/1"),
-            times=TimeRange("9:00a", "10:00a"),
-            repeat=Repeat("week mwf", "forever")
-        ))
-        self.add_event(CalendarEvent(
-            name="Language Translation",
-            desc="Language Translation class",
-            notifs=[NotifTime(15)],
-            dates=DateRange("4/2"),
-            times=TimeRange("12:30p", "1:45p"),
-            repeat=Repeat("week tr", "forever")
-        ))
+        # # Preseeded, just for now though
+        # self.add_event(CalendarEvent(
+        #     name="Intro to Computing",
+        #     desc="Intro to Computing class",
+        #     notifs=[NotifTime(15)],
+        #     dates=DateRange("4/1"),
+        #     times=TimeRange("9:00a", "10:00a"),
+        #     repeat=Repeat("week mwf", "forever")
+        # ))
+        # self.add_event(CalendarEvent(
+        #     name="Language Translation",
+        #     desc="Language Translation class",
+        #     notifs=[NotifTime(15)],
+        #     dates=DateRange("4/2"),
+        #     times=TimeRange("12:30p", "1:45p"),
+        #     repeat=Repeat("week tr", "forever")
+        # ))
 
         search_event_btn = self.ids.search_event_button
         search_event_btn.bind(on_release=lambda *a: self.search_event_popup())
@@ -203,6 +239,9 @@ class Home(Screen):
         add_event_btn.bind(on_release=lambda *a: self.add_event_popup())
         change_view_type_btn = self.ids.change_view_type_button
         change_view_type_btn.bind(on_release=lambda *a: self.toggle_view())
+        
+        # TEST: llm
+        self.ids.RUN_LLM_TEST.bind(on_release=lambda *a: self.llm_test())
 
         user_schedule.notify_daily()
         # Schedule notifications for today
@@ -317,13 +356,13 @@ class Home(Screen):
         # Name
         layout.add_widget(make_label("Event Name *"))
         name_input = TextInput(hint_text="e.g. Intro to Computing",
-                               multiline=False, size_hint_y=None, height=40)
+                               multiline=False, size_hint_y=None, height=60)
         layout.add_widget(name_input)
 
         # Description
         layout.add_widget(make_label("Description"))
         desc_input = TextInput(hint_text="Optional",
-                               multiline=False, size_hint_y=None, height=40)
+                               multiline=False, size_hint_y=None, height=60)
         layout.add_widget(desc_input)
 
         # Date pickers
@@ -333,7 +372,7 @@ class Home(Screen):
         years  = [str(y) for y in range(today.year, today.year + 5)]
 
         date_row = BoxLayout(orientation='horizontal', spacing=4,
-                             size_hint_y=None, height=40)
+                             size_hint_y=None, height=60)
         month_sp = make_spinner_row(months, str(today.month))
         day_sp   = make_spinner_row(days,   str(today.day))
         year_sp  = make_spinner_row(years,  str(today.year))
@@ -348,7 +387,7 @@ class Home(Screen):
 
         layout.add_widget(make_label("Start Time *"))
         start_time_row = BoxLayout(orientation='horizontal', spacing=4,
-                                   size_hint_y=None, height=40)
+                                   size_hint_y=None, height=60)
         start_h  = make_spinner_row(hours,   "9")
         start_m  = make_spinner_row(minutes, "00")
         start_ap = make_spinner_row(ampm,    "AM")
@@ -358,7 +397,7 @@ class Home(Screen):
 
         layout.add_widget(make_label("End Time *"))
         end_time_row = BoxLayout(orientation='horizontal', spacing=4,
-                                 size_hint_y=None, height=40)
+                                 size_hint_y=None, height=60)
         end_h  = make_spinner_row(hours,   "10")
         end_m  = make_spinner_row(minutes, "00")
         end_ap = make_spinner_row(ampm,    "AM")
@@ -369,11 +408,11 @@ class Home(Screen):
         # Repeat frequency toggle buttons
         layout.add_widget(make_label("Repeat"))
         freq_row = BoxLayout(orientation='horizontal', spacing=4,
-                             size_hint_y=None, height=40)
+                             size_hint_y=None, height=60)
         freq_options = ["Never", "Daily", "Weekly", "Monthly"]
         freq_buttons = {}
         for opt in freq_options:
-            tb = ThemedToggleButton(text=opt, group='freq', size_hint=(1, None), height=40)
+            tb = ThemedToggleButton(text=opt, group='freq', size_hint=(1, None), height=60)
             if opt == "Never":
                 tb.state = 'down'
             freq_buttons[opt] = tb
@@ -386,10 +425,10 @@ class Home(Screen):
         day_map    = {"M": "m", "T": "t", "W": "w", "Th": "th", "F": "f",
                       "Sa": "sa", "Su": "su"}
         days_row   = BoxLayout(orientation='horizontal', spacing=2,
-                               size_hint_y=None, height=40)
+                               size_hint_y=None, height=60)
         day_checks = {}
         for d in day_names:
-            col = BoxLayout(orientation='vertical', size_hint=(1, None), height=40)
+            col = BoxLayout(orientation='vertical', size_hint=(1, None), height=60)
             lbl = Label(text=d, size_hint_y=0.5)
             cb  = ThemedCheckBox(size_hint_y=0.5)
             day_checks[d] = cb
@@ -399,12 +438,12 @@ class Home(Screen):
 
         end_label = make_label("Repeat Until")
         end_row   = BoxLayout(orientation='horizontal', spacing=4,
-                              size_hint_y=None, height=40)
+                              size_hint_y=None, height=60)
         end_options = ["Forever", "Date"]
         end_buttons = {}
         for opt in end_options:
             tb = ThemedToggleButton(text=opt, group='repeat_end',
-                              size_hint=(1, None), height=40)
+                              size_hint=(1, None), height=60)
             if opt == "Forever":
                 tb.state = 'down'
             end_buttons[opt] = tb
@@ -412,7 +451,7 @@ class Home(Screen):
 
         # End date pickers (shown only when "Date" is selected)
         end_date_row = BoxLayout(orientation='horizontal', spacing=4,
-                                 size_hint_y=None, height=40)
+                                 size_hint_y=None, height=60)
         end_month_sp = make_spinner_row(months, str(today.month))
         end_day_sp   = make_spinner_row(days,   str(today.day))
         end_year_sp  = make_spinner_row(years,  str(today.year))
@@ -529,10 +568,10 @@ class Voice(Screen): pass
 
 class Scanner(Screen):
     def on_enter(self):
-        self.ids.cam_view.ids.camera.play = True
+        self.ids.camera.play = True
 
     def on_leave(self):
-        self.ids.cam_view.ids.camera.play = False
+        self.ids.camera.play = False
 
 class Edit(Screen): pass
 
@@ -545,15 +584,9 @@ class Root(BoxLayout):
 
     def on_size(self, *args):
         self.clear_widgets()
-
-        if self.width >= 800:
-            # Desktop: nav on left
-            self.add_widget(self.ids.nav_bar)
-            self.add_widget(self.ids.sm)
-        else:
-            # Mobile: nav on bottom
-            self.add_widget(self.ids.sm)
-            self.add_widget(self.ids.nav_bar)
+        # Mobile: nav on bottom
+        self.add_widget(self.ids.sm)
+        self.add_widget(self.ids.nav_bar)
 
     def set_active(self, screen_name):
         sm = self.ids.sm
@@ -581,12 +614,12 @@ class WhatNow(App):
     def build(self):
         self.title = "What Now?"
         # create a shared instance of command interpreter
-        #self.command_interpreter = command_interpreter
-        #self.schedule = user_schedule
+        self.command_interpreter = command_interpreter
+        self.schedule = user_schedule
 
         return Root()
 
 
 if __name__ == "__main__":
     asyncio.run(WhatNow().async_run(async_lib='asyncio'))
-    #WhatNow().run()
+    # WhatNow().run()

@@ -1,15 +1,12 @@
-from llama_cpp import Llama
 import logging
 import json
 import numpy as np
-import time
 import cv2
-from PIL import Image
 
 from pathlib import Path
 # Get the path to the project root (one level up from src)
 project_root = Path(__file__).resolve().parent.parent
-model = project_root / "models" / "qwen2.5-coder-1.5b-instruct-q4_0.gguf"
+model = project_root / "app" /  "models" / "qwen2.5-coder-1.5b-instruct-q4_0.gguf"
 
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -20,16 +17,9 @@ class LocalSyllabusParser:
         Initialize with GGUF model file
         model_path: path to .gguf file
         """
-        self.llm = Llama(
-            model_path = str(model),
-            n_ctx=4096,  # Context window
-            n_threads=4,  # CPU threads
-            n_gpu_layers=0,  # Set to 35 for GPU acceleration
-            verbose=False
-        )
-
-    def parse(self, ocr_text: str) -> dict:
-        prompt = f"""You are a JSON extraction assistant. Parse the following syllabus text and extract course information.
+        
+    def get_prompt(self, ocr_text: str) -> str:
+        return f"""You are a JSON extraction assistant. Parse the following syllabus text and extract course information.
 
 SYLLABUS TEXT:
 {ocr_text}
@@ -78,23 +68,30 @@ OUTPUT FORMAT:
 
 JSON:"""
 
-        response = self.llm.create_chat_completion(
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }],
-            temperature=0.1,
-            max_tokens=2000,
-            response_format={"type": "json_object"}  # Forces JSON
-        )
+    def parse(self, ocr_text: str) -> dict:
+        pass
+        # TODO: turn into cli version
+        # response = self.llm.create_chat_completion(
+        #     messages=[{
+        #         "role": "user",
+        #         "content": self.get_prompt(ocr_text)
+        #     }],
+        #     temperature=0.1,
+        #     max_tokens=2000,
+        #     response_format={"type": "json_object"}  # Forces JSON
+        # )
 
-        content = response['choices'][0]['message']['content']
+        # content = response['choices'][0]['message']['content']
+        content = 'aoeu'
         try:
             parsed_data = json.loads(content)
             return parsed_data
         except json.JSONDecodeError as e:
             print(f"Failed to parse JSON: {e}")
             return {"error": "Failed to parse JSON"}
+
+
+
 
 # TODO: Move these into a class
 
