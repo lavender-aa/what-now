@@ -14,7 +14,7 @@ For the `pyaudio` wheel to build correctly, the `python3.13-devel` package must 
 Download the `.AppImage` file from the latest release. We recommend using [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) to integrate the AppImage into your desktop environment (e.g., adding it to your application menu). Any similar AppImage integration tool will work as well.
 
 ## Windows Users
-TODO: figure out install process for windows
+Download the 'WhatNowsetup.exe' file from the latest release. Run the file, click "More info" and "Run anyway" if prompted. Follow the installer steps and launch 'What Now?' from the start menu.
 
 ## Details
 The latest release of Kivy, version 2.3.1, is supported by up to Python 3.13. The setup scripts ensure that:
