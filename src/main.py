@@ -79,8 +79,8 @@ class Home(Screen):
         os.system(cmd)
         print("just called system command")
         
-        os.system("sleep 120")
-        print("waited 2m")
+        os.system("sleep 30")
+        print("waited 30s")
         
         with open("output.txt", "r") as f:
             response = f.read()
@@ -566,12 +566,12 @@ class Home(Screen):
 
 class Voice(Screen): pass
 
-class Scanner(Screen):
-    def on_enter(self):
-        self.ids.camera.play = True
+# class Scanner(Screen):
+#     def on_enter(self):
+#         self.ids.camera.play = True
 
-    def on_leave(self):
-        self.ids.camera.play = False
+#     def on_leave(self):
+#         self.ids.camera.play = False
 
 class Edit(Screen): pass
 

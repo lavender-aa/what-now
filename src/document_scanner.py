@@ -69,7 +69,13 @@ class DocumentScanner(BoxLayout):
         # Gen AI parser
         self.parser = LocalSyllabusParser()
         self.extracted_json = Optional[str]
+        
+        
+    def on_enter(self):
+        self.ids.camera.play = True
 
+    def on_leave(self):
+        self.ids.camera.play = False
 
 
     # TODO: Actually implement this, as it stands upload is completely broken because I can't test it on my computer due to my broken touchscreen.
