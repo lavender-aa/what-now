@@ -6,6 +6,8 @@ from copy import deepcopy
 from difflib import SequenceMatcher
 import calendar
 import datetime
+from pathlib import Path
+import os
 
 from Notifier import Notifier
 
@@ -17,6 +19,13 @@ from datetime import date
 from datetime import time
 # contains all of a user's events
 # purpose: manage calendar events
+
+#save in appdata
+SAVE_DIR = Path(os.environ["LOCALAPPDATA"]) / "WhatNow"
+SAVE_DIR.mkdir(exist_ok=True)
+
+SAVE_FILE = SAVE_DIR / "user_schedule.ics"
+
 class Schedule():
     events: List[List[CalendarEvent]] # repeating events grouped together
     notifier: Notifier
@@ -33,7 +42,7 @@ class Schedule():
         events = []
 
         try:
-            with open(filename, 'rb') as f:
+            with open(SAVE_FILE, 'rb') as f:
                 cal = Calendar.from_ical(f.read())
         except FileNotFoundError:
             print("No saved schedule found.")
@@ -309,7 +318,7 @@ class Schedule():
             cal.add_component(event)
 
 
-        with open(filename, 'wb') as f:
+        with open(SAVE_FILE, 'wb') as f:
             f.write(cal.to_ical())
 
     def day_mapping(self,d: Day) -> str:

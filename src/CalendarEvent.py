@@ -199,7 +199,6 @@ class DateRange:
     
     
 # class to hold semester start/end dates
-# TODO: figure out what to do with this / how to implement
 class Semesters:
     terms: Dict # {str, DateRange}
 
@@ -384,7 +383,7 @@ class Repeat:
                 repeat = RepeatCycle(repeat, None)
             else:
                 repeat = RepeatCycle(repeat[0:repeat.find(" ")], repeat[repeat.find(" ")+1:])
-            
+
             assert type(repeat) == RepeatCycle, "type checking"
             
         if type(duration) == str:
@@ -488,6 +487,7 @@ class CalendarEvent():
 
                 case TimeType.WEEK: # repeat specific days per week
                     # translate date to weekday value
+
                     day = Day((event_start + delta_day).weekday())
                     while day not in event.repeat.cycle.days:
                         delta_day = timedelta(delta_day.days + 1)
@@ -497,44 +497,33 @@ class CalendarEvent():
 
                 case TimeType.MONTH: # specific days per month
                     # return the smallest date after the current
-                    later_dates = {
-                        Date(event_start.year, event_start.month, date.day)
-                        for date in event.repeat.cycle.set
-                        if date.day > event_start.day
-                    }
-                    
-                    # if none later than current, return smallest overall
-                    # (first occurrence next month)
-                    if len(later_dates) == 0:
-                        later_dates = event.repeat.cycle.set
-                        
-                        # increment month for ecah date
-                        new_dates: Set[Date] = set()
-                        for date in later_dates:
-                            year = event.date_range.start_date.year
-                            month = event.date_range.start_date.month + 1
-                            if month == 13:
-                                month = 1
-                                year += 1
-                            new_dates.add(Date(year, month, date.day))
-                        later_dates = new_dates
-                            
-                        
-                    return min(later_dates)
+                    days = event.repeat.cycle.days
 
-                case TimeType.YEAR: # specific dates per year
-                    # return the smallest date after the current
-                    later_dates = {date for date in event.repeat.cycle.set if date > event_start}
-                    
-                    # if none later than current, return smallest overall
-                    # (first occurrence next year)
-                    if len(later_dates) == 0:
-                        later_dates = set()
-                        
-                        # increment year for ecah date
-                        for date in event.repeat.cycle.set:
-                            later_dates.add(Date(date.year + 1, date.month, date.day))
-                        
+                    if not days:
+                        # repeat on same day of month as start date
+                        days = {event.date_range.start_date.day}
+
+                    later_dates = {
+                        Date(event_start.year, event_start.month, day)
+                        for day in days
+                        if day > event_start.day
+                    }
+
+                    if not later_dates:
+                        new_dates: Set[Date] = set()
+
+                        year = event_start.year
+                        month = event_start.month + 1
+
+                        if month == 13:
+                            month = 1
+                            year += 1
+
+                        for day in days:
+                            new_dates.add(Date(year, month, day))
+
+                        later_dates = new_dates
+
                     return min(later_dates)
 
                 case _:

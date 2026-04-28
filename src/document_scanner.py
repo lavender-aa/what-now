@@ -8,6 +8,7 @@ from kivy.core.window import Window
 from kivy.animation import Animation
 from kivy.uix.progressbar import ProgressBar
 from typing import Optional
+from local_syllabus_parser import deskew_image, enhance_preprocessing
 
 
 

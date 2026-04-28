@@ -120,11 +120,11 @@ class Voice(Screen):
                         pass
                     except sr.RequestError as e:
                         Clock.schedule_once(
-                            lambda dt: self.show_error_popup(f"No internet or speech service issue:\n{e}")
+                            lambda dt, err=e: self.show_error_popup(f"No internet or speech service issue:\n{err}")
                         )
                     except Exception as e:
                         Clock.schedule_once(
-                            lambda dt: self.show_error_popup(f"Unexpected error:\n{e}")
+                            lambda dt, err=e: self.show_error_popup(f"Unexpected error:\n{err}")
                         )
         finally:
             self.listen_thread = None
